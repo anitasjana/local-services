@@ -1,71 +1,63 @@
-
 import { Link } from "react-router-dom";
 
 const categories = [
-  { icon: "🔧", name: "Home Repair", providers: 120, rating: "4.9" },
-  { icon: "🧹", name: "Cleaning", providers: 85, rating: "4.8" },
-  { icon: "📚", name: "Tutoring", providers: 64, rating: "4.9" },
-  { icon: "💇", name: "Beauty", providers: 95, rating: "4.7" },
-  { icon: "🚚", name: "Moving", providers: 42, rating: "4.8" },
-  { icon: "🔌", name: "Appliance Repair", providers: 73, rating: "4.9" },
+  "Home repair",
+  "Cleaning",
+  "Tutoring",
+  "Beauty",
+  "Moving",
+  "Appliance repair",
+  "Plumbing",
+  "Electrical",
 ];
 
 function Categories() {
   return (
-    <div className="categories-page">
-
-      <nav className="categories-navbar">
-        <Link to="/" className="categories-logo">
-          ⌂ Fixr<span>Hub</span>
-        </Link>
-
-        <div>
+    <div className="service-page">
+      <header className="service-nav">
+        <Link to="/" className="service-logo"><span />Nearlink</Link>
+        <nav>
           <Link to="/">Home</Link>
-          <Link to="/services">Services</Link>
-        </div>
-      </nav>
+          <Link to="/providers">Find services</Link>
+          <Link to="/signup">Become a provider</Link>
+          <Link to="/login" className="nav-login">Log in</Link>
+          <Link to="/signup" className="nav-signup">Sign up</Link>
+        </nav>
+      </header>
 
-      <section className="categories-hero">
-        <p className="category-label">EXPLORE OUR SERVICES</p>
-        <h1>Find the Right Service for Your Needs</h1>
-        <p>
-          Choose from our wide range of trusted local service
-          professionals.
+      <main className="service-container">
+        <p className="service-breadcrumb">
+          <Link to="/">Home</Link> › All categories
         </p>
-      </section>
 
-      <section className="categories-container">
-        <div className="categories-heading">
-          <div>
-            <h2>Popular Categories</h2>
-            <p>Explore services from verified professionals.</p>
-          </div>
-          <span>6 Categories</span>
-        </div>
+        <h1 className="service-heading">All service categories</h1>
 
-        <div className="categories-grid">
+        <div className="category-grid">
           {categories.map((category) => (
-            <div className="category-card" key={category.name}>
-              <div className="category-icon">{category.icon}</div>
-
-              <h3>{category.name}</h3>
-
-              <p>{category.providers}+ Service Providers</p>
-
-              <div className="category-bottom">
-                <span>⭐ {category.rating}</span>
-                <Link to="/providers">Explore ↗</Link>
-              </div>
-            </div>
+            <Link
+              to={`/providers?category=${encodeURIComponent(category)}`}
+              className="category-card"
+              key={category}
+            >
+              <div className="category-image">{category}</div>
+              <h3>{category}</h3>
+              <p>[X] providers · ★ [X] average</p>
+            </Link>
           ))}
         </div>
-      </section>
+      </main>
 
-      <footer className="categories-footer">
-        © 2026 Local Service Trust Platform. All rights reserved.
-      </footer>
-
+      <ServiceFooter />
     </div>
+  );
+}
+
+function ServiceFooter() {
+  return (
+    <footer className="service-footer">
+      <strong>Nearlink · Trusted local services</strong>
+      <span>About · Contact · Privacy Policy · Terms</span>
+    </footer>
   );
 }
 

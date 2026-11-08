@@ -1,0 +1,512 @@
+
+.dash-page {
+  min-height: 100vh;
+  background: #f3f8f7;
+  color: #142f32;
+  font-family: Arial, sans-serif;
+}
+
+.dash-navbar {
+  height: 76px;
+  background: #fff;
+  border-bottom: 1px solid #dce9e7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4.4%;
+}
+
+.dash-logo {
+  color: #087875;
+  font-size: 25px;
+  font-weight: 800;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.dash-logo span {
+  width: 16px;
+  height: 16px;
+  background: #f9a21b;
+  border-radius: 5px;
+}
+
+.dash-navbar nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.dash-navbar nav a {
+  color: #183438;
+  text-decoration: none;
+}
+
+.avatar {
+  display: inline-block;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #2b4a72;
+  flex-shrink: 0;
+}
+
+.dash-layout {
+  max-width: 1152px;
+  margin: 40px auto;
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  gap: 16px;
+}
+
+.dash-sidebar,
+.dash-card,
+.stat-card {
+  background: #fff;
+  border: 1px solid #dce9e7;
+  border-radius: 21px;
+  box-shadow: 0 8px 25px rgba(22, 61, 59, .05);
+}
+
+.dash-sidebar {
+  padding: 14px;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dash-sidebar a {
+  padding: 14px 15px;
+  border-radius: 13px;
+  text-decoration: none;
+  color: #405b60;
+}
+
+.dash-sidebar a.active {
+  background: #dcf3ef;
+  color: #075e5c;
+  font-weight: 700;
+}
+
+.dash-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dash-content h2,
+.dash-content h3,
+.chat-layout h3 {
+  margin: 0 0 14px;
+}
+
+.success-banner {
+  background: #ddf3ef;
+  border: 1px solid #d4ebe6;
+  border-radius: 20px;
+  padding: 24px 22px;
+  color: #587076;
+}
+
+.success-banner strong {
+  color: #142f32;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.stat-card {
+  padding: 24px 22px;
+}
+
+.stat-card span,
+.earnings-card span {
+  color: #60767b;
+}
+
+.stat-card h2,
+.earnings-card h2 {
+  margin: 5px 0 0;
+  font-size: 30px;
+}
+
+.dash-card {
+  padding: 22px;
+}
+
+.dash-card h3 {
+  font-size: 20px;
+}
+
+.status-flow,
+.action-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.status-pill {
+  display: inline-block;
+  background: #ddf3ef;
+  color: #075e5c;
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.status-pill.warning {
+  background: #fff0d3;
+  color: #805000;
+}
+
+.featured-booking .action-row {
+  margin-top: 14px;
+}
+
+.primary-btn,
+.outline-btn,
+.orange-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 23px;
+  border-radius: 28px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.primary-btn {
+  background: #087875;
+  border: 1px solid #087875;
+  color: #fff;
+}
+
+.outline-btn {
+  background: #fff;
+  border: 1px solid #087875;
+  color: #087875;
+}
+
+.orange-btn {
+  background: #f9a21b;
+  border: 1px solid #f9a21b;
+  color: #172f30;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th, td {
+  padding: 13px 8px;
+  border-top: 1px solid #e2ecea;
+  font-size: 14px;
+}
+
+th {
+  font-weight: 700;
+}
+
+.provider-heading,
+.progress-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.provider-heading h2 {
+  margin: 0;
+}
+
+.earnings-card {
+  padding: 25px 22px;
+}
+
+.progress-track {
+  height: 10px;
+  background: #dce9e7;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-track div {
+  width: 80%;
+  height: 100%;
+  background: #087875;
+  border-radius: 20px;
+}
+
+.request-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid #e2ecea;
+}
+
+.request-row:last-child {
+  border-bottom: 0;
+}
+
+.request-row p,
+.booking-info p {
+  color: #60767b;
+  line-height: 1.6;
+  margin: 3px 0 0;
+}
+
+.empty-state {
+  color: #60767b;
+}
+
+/* CHAT PAGE */
+
+.chat-layout {
+  max-width: 1152px;
+  margin: 40px auto;
+  display: grid;
+  grid-template-columns: 280px minmax(300px, 1fr) 280px;
+  gap: 16px;
+}
+
+.chat-list,
+.chat-window,
+.booking-info {
+  min-height: 640px;
+}
+
+.chat-list input,
+.message-form input {
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  border: 1px solid #cbdedb;
+  border-radius: 12px;
+  padding: 0 14px;
+  outline: none;
+}
+
+.chat-contact {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-align: left;
+  padding: 12px 10px;
+  border-radius: 14px;
+  margin-top: 10px;
+  cursor: pointer;
+  color: #142f32;
+}
+
+.chat-contact.selected {
+  background: #ddf3ef;
+}
+
+.chat-contact strong,
+.chat-contact small {
+  display: block;
+}
+
+.chat-contact small {
+  color: #60767b;
+  margin-top: 4px;
+}
+
+.chat-window {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-header {
+  min-height: 77px;
+  padding: 15px 22px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 1px solid #e2ecea;
+}
+
+.chat-header > div {
+  flex: 1;
+}
+
+.chat-header small {
+  display: block;
+  color: #60767b;
+  margin-top: 5px;
+}
+
+.messages-area {
+  flex: 1;
+  padding: 22px;
+  min-height: 430px;
+}
+
+.chat-date {
+  text-align: center;
+  color: #60767b;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.message-row {
+  display: flex;
+  margin: 12px 0;
+}
+
+.message-row.mine {
+  justify-content: flex-end;
+}
+
+.message-bubble {
+  max-width: 75%;
+  padding: 14px 16px;
+  border-radius: 17px 17px 17px 4px;
+  background: #f1f7f6;
+  line-height: 1.4;
+}
+
+.message-row.mine .message-bubble {
+  background: #087875;
+  color: #fff;
+  border-radius: 17px 17px 4px 17px;
+}
+
+.message-bubble small {
+  display: block;
+  font-size: 11px;
+  opacity: .75;
+}
+
+.message-form {
+  display: flex;
+  gap: 15px;
+  padding: 15px 22px;
+  border-top: 1px solid #e2ecea;
+}
+
+.booking-info {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.full-btn {
+  width: 100%;
+}
+
+.safe-note {
+  color: #60767b;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.chat-footer {
+  min-height: 74px;
+  background: #102e30;
+  color: #c6d8d6;
+  padding: 20px 4.4%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .dash-layout {
+    margin: 25px 18px;
+  }
+
+  .chat-layout {
+    margin: 25px 18px;
+    grid-template-columns: 220px 1fr;
+  }
+
+  .booking-info {
+    grid-column: 2;
+    min-height: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .dash-navbar {
+    height: auto;
+    padding: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .dash-navbar nav {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .dash-layout,
+  .chat-layout {
+    display: flex;
+    flex-direction: column;
+    margin: 18px 12px;
+  }
+
+  .dash-sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .dash-sidebar a {
+    white-space: nowrap;
+  }
+
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .request-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chat-list,
+  .chat-window,
+  .booking-info {
+    min-height: auto;
+  }
+
+  .messages-area {
+    min-height: 350px;
+  }
+
+  .chat-footer {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}

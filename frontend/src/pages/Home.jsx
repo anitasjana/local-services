@@ -1,206 +1,291 @@
-
 import React from "react";
 import "../App.css";
 
-const services = [
+const categories = [
+  { name: "Plumber", count: "120+ providers", icon: "🔧" },
+  { name: "Electrician", count: "95+ providers", icon: "⚡" },
+  { name: "Cleaner", count: "150+ providers", icon: "🧹" },
+  { name: "Tutor", count: "80+ providers", icon: "📚" },
+  { name: "Mechanic", count: "65+ providers", icon: "🛠️" },
+  { name: "Painter", count: "70+ providers", icon: "🎨" },
+];
+
+const providers = [
   {
-    icon: "⚙️",
-    title: "Reliable & Fast",
-    description: "Quick response and dependable home services whenever you need them.",
+    name: "Rahul Sharma",
+    service: "Electrician",
+    rating: "4.9",
+    reviews: "120",
+    price: "299",
+    image:
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=700&q=85",
   },
   {
-    icon: "👨‍🔧",
-    title: "Expert Professionals",
-    description: "Skilled and verified professionals for every home service.",
+    name: "Amit Das",
+    service: "Plumber",
+    rating: "4.8",
+    reviews: "86",
+    price: "249",
+    image:
+      "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=700&q=85",
   },
   {
-    icon: "💰",
-    title: "Transparent Pricing",
-    description: "Clear pricing with no hidden charges or unexpected costs.",
+    name: "Priya Singh",
+    service: "Cleaning",
+    rating: "4.9",
+    reviews: "210",
+    price: "499",
+    image:
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=700&q=85",
+  },
+];
+
+const steps = [
+  {
+    number: "1",
+    title: "Search",
+    description: "Pick a service and your area.",
+  },
+  {
+    number: "2",
+    title: "Book",
+    description: "Choose a slot and describe the problem.",
+  },
+  {
+    number: "3",
+    title: "Complete",
+    description: "Provider finishes, you confirm.",
+  },
+  {
+    number: "4",
+    title: "Review",
+    description: "Rate with a Verified Booking tag.",
   },
 ];
 
 function App() {
   return (
-    <div className="page-wrapper">
-      <div className="website">
+    <div className="nearlink-page">
+      {/* NAVBAR */}
+      <header className="nl-navbar">
+        <a href="#home" className="nl-logo">
+          <span className="nl-logo-icon"></span>
+          Nearlink
+        </a>
 
-        {/* Navbar */}
-        <header className="navbar">
-          <a href="#" className="logo">
-            <span className="logo-icon">⌂</span>
-            <span>Fixr<span className="logo-blue">Hub</span></span>
-          </a>
+        <nav className="nl-nav-links">
+          <a href="#home">Home</a>
+          <a href="#categories">Find services</a>
+          <a href="#provider-cta">Become a provider</a>
+        </nav>
 
-          <nav className="nav-links">
-            <a href="#" className="active">Home</a>
-            <a href="#services">Services</a>
-            <a href="#about">About Us</a>
-            <a href="#services">Book a Service</a>
-            <a href="#faq">FAQ</a>
-            <a href="#blog">Blog</a>
-            <a href="#contact">Contact Us</a>
-          </nav>
+        <div className="nl-nav-actions">
+          <a href="#login" className="nl-login">Log in</a>
+          <a href="#signup" className="nl-signup">Signup</a>
+        </div>
+      </header>
 
-          <div className="nav-right">
-            <a href="#services" className="search-link">
-              <span>⌕</span> Search
-            </a>
-            <a href="#services" className="quote-btn">Get a Quote</a>
-          </div>
-        </header>
+      {/* HERO */}
+      <main>
+        <section className="nl-hero" id="home">
+          <div className="nl-hero-inner">
+            <div className="nl-hero-content">
+              <span className="nl-verified-label">
+                Verified providers only
+              </span>
 
-        {/* Hero Section */}
-        <section className="hero-section">
-
-          <div className="hero-background-shape shape-one"></div>
-          <div className="hero-background-shape shape-two"></div>
-          <div className="hero-background-shape shape-three"></div>
-
-          <div className="hero-container">
-
-            {/* Left Content */}
-            <div className="hero-content">
               <h1>
-                Reliable Home
+                Reliable local services
                 <br />
-                Services at Your
-                <br />
-                <span className="script-text">Doorstep</span>
+                you can <span>trust</span>
               </h1>
 
-              <p className="hero-description">
-                We provide professional, reliable, and efficient home
-                services tailored to meet all your needs. Whether it's
-                plumbing, electrical repairs, cleaning, or handyman
-                services, our team of experts is ready to help.
+              <p className="nl-hero-description">
+                Find verified plumbers, electricians, cleaners and tutors
+                near you. Book in minutes and review only after the job is done.
               </p>
 
-              <div className="hero-buttons">
-                <a href="#services" className="primary-btn">
-                  Book a Service Now
-                </a>
+              <form
+                className="nl-search-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  document
+                    .getElementById("providers")
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="What do you need?"
+                  aria-label="Service needed"
+                />
+                <input
+                  type="text"
+                  placeholder="Your area"
+                  aria-label="Your area"
+                />
+                <button type="submit">Search</button>
+              </form>
 
-                <a href="#services" className="round-btn">
-                  ↗
-                </a>
-              </div>
-
-              <div className="stats">
-                <div className="stat-item">
-                  <h2>150+</h2>
-                  <p>Team Members</p>
-                  <small>By Our Service</small>
+              <div className="nl-stats">
+                <div>
+                  <h2>500+</h2>
+                  <p>Verified providers</p>
                 </div>
-
-                <div className="stat-item">
+                <div>
                   <h2>2,300+</h2>
-                  <p>Project Completed</p>
-                  <small>By Our Service</small>
+                  <p>Jobs completed</p>
                 </div>
-
-                <div className="stat-item">
-                  <h2>24+</h2>
-                  <p>Years Experience</p>
-                  <small>By Our Service</small>
+                <div>
+                  <h2>4.9</h2>
+                  <p>Average rating</p>
                 </div>
               </div>
             </div>
 
-            {/* Right Image Collage */}
-            <div className="hero-visual">
-
-              <div className="customer-info">
-                <div className="customer-avatars">
-                  <img src="https://i.pravatar.cc/80?img=47" alt="Customer"/>
-                  <img src="https://i.pravatar.cc/80?img=12" alt="Customer"/>
-                  <img src="https://i.pravatar.cc/80?img=13" alt="Customer"/>
-                  <img src="https://i.pravatar.cc/80?img=11" alt="Customer"/>
-                  <img src="https://i.pravatar.cc/80?img=44" alt="Customer"/>
-                </div>
-                <div className="customer-count">
-                  <strong>20k</strong>
-                  <span>Total Customer</span>
-                </div>
-              </div>
-
-              <div className="service-image image-cleaner">
+            <div className="nl-hero-grid">
+              <div className="nl-hero-image">
                 <img
-                  src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=85"
-                  alt="Professional cleaning service"
+                  src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=700&q=85"
+                  alt="Electrician working"
                 />
+                <span>Electrician</span>
               </div>
 
-              <div className="service-image image-electrician">
+              <div className="nl-hero-image">
                 <img
-                  src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=85"
-                  alt="Professional electrician"
+                  src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=700&q=85"
+                  alt="Professional cleaning"
                 />
+                <span>Cleaning</span>
               </div>
 
-              <div className="service-image image-home">
+              <div className="nl-hero-image">
                 <img
-                  src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=85"
-                  alt="Home maintenance service"
+                  src="https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=700&q=85"
+                  alt="Plumbing service"
                 />
+                <span>Plumbing</span>
               </div>
 
-              <div className="satisfaction-card">
-                <div className="satisfaction-icon">✹</div>
-                <div>
-                  <h2>100%</h2>
-                  <p>Satisfaction Guarantee</p>
-                </div>
+              <div className="nl-hero-trust">
+                <h2>100%</h2>
+                <p>Verified before listing</p>
               </div>
-
             </div>
           </div>
         </section>
 
-        {/* Why Choose Us */}
-        <section className="why-section" id="about">
-          <div className="why-heading">
-            <div>
-              <h2>Why Choose FixrHub</h2>
-              <p>
-                Whether you're dealing with a leaky faucet or a major
-                pipe repair, our experienced professionals are ready
-                to handle it all. Our plumbing experts are here to help.
-              </p>
-            </div>
-
-            <a href="#services" className="why-book-btn">
-              Book a Service Now <span>↗</span>
+        {/* POPULAR CATEGORIES */}
+        <section className="nl-section nl-categories" id="categories">
+          <div className="nl-section-heading">
+            <h2>Popular categories</h2>
+            <a href="#categories" className="nl-outline-btn">
+              All categories
             </a>
           </div>
 
-          <div className="feature-grid">
-            {services.map((service, index) => (
-              <div className="feature-card" key={index}>
-                <span className="feature-icon">{service.icon}</span>
-
+          <div className="nl-category-grid">
+            {categories.map((category) => (
+              <a
+                href="#providers"
+                className="nl-category-card"
+                key={category.name}
+              >
+                <span className="nl-category-icon">{category.icon}</span>
                 <div>
-                  <h3>{service.title}</h3>
-                  <p>{service.description}</p>
+                  <h3>{category.name}</h3>
+                  <p>{category.count} · ★ 4.8</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        {/* FEATURED PROVIDERS */}
+        <section className="nl-section nl-providers" id="providers">
+          <div className="nl-section-heading">
+            <h2>Featured verified providers</h2>
+          </div>
+
+          <div className="nl-provider-grid">
+            {providers.map((provider) => (
+              <article className="nl-provider-card" key={provider.name}>
+                <div className="nl-provider-image">
+                  <img src={provider.image} alt={provider.service} />
+                  <span>{provider.service}</span>
                 </div>
 
-                <span className="feature-arrow">↗</span>
+                <h3>{provider.name}</h3>
+
+                <div className="nl-provider-rating">
+                  ★ {provider.rating} ({provider.reviews} reviews)
+                  <span>Verified</span>
+                </div>
+
+                <div className="nl-provider-bottom">
+                  <strong>From ₹{provider.price}</strong>
+                  <a href="#providers">View details</a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section className="nl-section nl-how">
+          <h2>How it works</h2>
+
+          <div className="nl-steps-grid">
+            {steps.map((step) => (
+              <div className="nl-step-card" key={step.number}>
+                <span className="nl-step-number">{step.number}</span>
+                <h3>{step.title}</h3>
+                <p>{step.description}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="footer" id="contact">
-          <a href="#" className="logo">
-            <span className="logo-icon">⌂</span>
-            Fixr<span className="logo-blue">Hub</span>
-          </a>
-          <p>Trusted professionals, reliable services, better homes.</p>
-          <span>© 2026 FixrHub. All rights reserved.</span>
-        </footer>
+        {/* TRUST SECTION */}
+        <section className="nl-trust-section">
+          <div>
+            <h3>Verified profiles</h3>
+            <p>ID and business proof checked.</p>
+          </div>
+          <div>
+            <h3>Real reviews</h3>
+            <p>Only completed bookings can review.</p>
+          </div>
+          <div>
+            <h3>Secure payment</h3>
+            <p>Cash, online or escrow.</p>
+          </div>
+        </section>
 
-      </div>
+        {/* PROVIDER CTA */}
+        <section className="nl-provider-cta" id="provider-cta">
+          <div>
+            <h2>Offer your skills</h2>
+            <p>Join as a provider and grow your local business.</p>
+          </div>
+          <a href="#signup">Become a provider</a>
+        </section>
+      </main>
+
+      {/* FOOTER */}
+      <footer className="nl-footer" id="contact">
+        <strong>Nearlink · Trusted local services</strong>
+        <div>
+          <a href="#about">About</a>
+          <span>·</span>
+          <a href="#contact">Contact</a>
+          <span>·</span>
+          <a href="#privacy">Privacy Policy</a>
+          <span>·</span>
+          <a href="#terms">Terms</a>
+        </div>
+      </footer>
     </div>
   );
 }

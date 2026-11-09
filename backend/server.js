@@ -1,23 +1,29 @@
-
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
+
 const authRoutes = require("./routes/authRoutes");
+const serviceRoutes = require("./routes/serviceRoutes");
+const providerRoutes = require("./routes/providerRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Home route
+// Home
 app.get("/", (req, res) => {
   res.send("Nearlink Backend is running!");
 });
 
-// Authentication routes
+// API Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/services", serviceRoutes);
+app.use("/api/providers", providerRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 const PORT = process.env.PORT || 5000;
 

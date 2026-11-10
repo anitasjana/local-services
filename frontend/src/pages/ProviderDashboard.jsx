@@ -1,83 +1,294 @@
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "../Dashboard.css";
+import api from "../services/api";
 
 export default function ProviderDashboard() {
-  const [requests, setRequests] = useState([
-    { id: 1, service: "Fan installation", customer: "Customer name", time: "Tomorrow 10:00 AM", payment: "Cash" },
-    { id: 2, service: "Wiring repair", customer: "Customer name", time: "Friday 2:00 PM", payment: "Online" },
-  ]);
+  const navigate = useNavigate();
 
-  const [accepted, setAccepted] = useState(3);
-  const [declined, setDeclined] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [updatingId, setUpdatingId] = useState("");
 
-  const updateRequest = (id, action) => {
-    if (action === "accept") setAccepted((n) => n + 1);
-    if (action === "decline") setDeclined((prev) => [...prev, id]);
-    setRequests((prev) => prev.filter((r) => r.id !== id));
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const response = await api.get("/bookings");
+        const data = response.data.bookings || response.data;
+        setBookings(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError(
+          err.response?.data?.message || "Unable to load booking requests."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  const pendingBookings = useMemo(
+    () => bookings.filter((b) => b.status === "pending"),
+    [bookings]
+  );
+
+  const acceptedBookings = useMemo(
+    () => bookings.filter((b) => b.status === "accepted"),
+    [bookings]
+  );
+
+  const completedBookings = useMemo(
+    () => bookings.filter((b) => b.status === "completed"),
+    [bookings]
+  );
+
+  const earnings = completedBookings.reduce(
+    (total, booking) => total + (Number(booking.price) || 0),
+    0
+  );
+
+  const updateBookingStatus = async (bookingId, status) => {
+    setError("");
+    setUpdatingId(bookingId);
+
+    try {
+      const response = await api.patch(`/bookings/${bookingId}/status`, {
+        status,
+      });
+
+      const updatedBooking =
+        response.data.booking || response.data;
+
+      setBookings((previous) =>
+        previous.map((booking) =>
+          booking._id === bookingId
+            ? { ...booking, ...updatedBooking, status }
+            : booking
+        )
+      );
+    } catch (err) {
+      setError(
+        err.response?.data?.message || `Unable to ${status} this booking.`
+      );
+    } finally {
+      setUpdatingId("");
+    }
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("nearlink_token");
+    localStorage.removeItem("nearlink_user");
+    navigate("/login");
+  };
+
+  const getCustomerName = (booking) =>
+    booking.customer?.name ||
+    booking.customer?.user?.name ||
+    "Customer";
+
+  const getServiceName = (booking) =>
+    booking.service?.name ||
+    booking.service?.title ||
+    "Service";
+
+  const formatDate = (date) => {
+    if (!date) return "Date not specified";
+    return new Date(date).toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  };
+
+  const getPaymentName = (method) =>
+    ({ cash: "Cash", online: "Online", escrow: "Escrow" }[method] ||
+      method ||
+      "Not specified");
 
   return (
     <div className="dash-page">
       <header className="dash-navbar">
-        <Link to="/" className="dash-logo"><span /> Nearlink</Link>
+        <Link to="/" className="dash-logo">
+          <span></span> Nearlink
+        </Link>
+
         <nav>
-          <Link to="/customer-dashboard">Customer</Link>
           <Link to="/provider-dashboard">Provider</Link>
-          <Link to="/admin">Admin</Link>
-          <span className="avatar" />
-          <Link className="outline-btn" to="/login">Log out</Link>
+          <Link to="/categories">Find services</Link>
+          <span className="avatar"></span>
+          <button className="outline-btn" onClick={handleLogout}>
+            Log out
+          </button>
         </nav>
       </header>
 
       <main className="dash-layout">
         <aside className="dash-sidebar">
-          {["Booking requests", "Accepted jobs", "Earnings", "Reviews", "Edit profile"].map((item, i) => (
-            <a href="#" key={item} className={i === 0 ? "active" : ""}>{item}</a>
-          ))}
+          <a className="active" href="#requests">Booking requests</a>
+          <a href="#accepted">Accepted jobs</a>
+          <a href="#earnings">Earnings</a>
+          <a href="#completed">Completed jobs</a>
+          <Link to="/chat">Messages</Link>
+          <Link to="/provider-profile">Edit profile</Link>
         </aside>
 
         <section className="dash-content">
           <div className="provider-heading">
             <h2>Provider dashboard</h2>
-            <span className="status-pill">Verification: Approved</span>
+            <span className="status-pill">Provider account</span>
           </div>
+
+          {error && <p className="dashboard-error">{error}</p>}
 
           <div className="stat-grid">
-            <div className="stat-card"><span>New requests</span><h2>{requests.length}</h2></div>
-            <div className="stat-card"><span>Accepted</span><h2>{accepted}</h2></div>
-            <div className="stat-card"><span>Completed</span><h2>120</h2></div>
+            <div className="stat-card">
+              <span>New requests</span>
+              <h2>{pendingBookings.length}</h2>
+            </div>
+
+            <div className="stat-card">
+              <span>Accepted</span>
+              <h2>{acceptedBookings.length}</h2>
+            </div>
+
+            <div className="stat-card">
+              <span>Completed</span>
+              <h2>{completedBookings.length}</h2>
+            </div>
           </div>
 
-          <div className="dash-card earnings-card">
-            <span>Earnings</span>
-            <h2>₹[X]</h2>
+          <div className="dash-card earnings-card" id="earnings">
+            <span>Completed booking value</span>
+            <h2>₹{earnings.toLocaleString("en-IN")}</h2>
+            <p className="muted-text">
+              Calculated from completed bookings; this is not a verified payout.
+            </p>
           </div>
 
-          <div className="dash-card">
-            <div className="progress-heading"><strong>Profile completeness</strong><span>80%</span></div>
-            <div className="progress-track"><div /></div>
-          </div>
-
-          <div className="dash-card">
+          {/* Pending requests */}
+          <div className="dash-card" id="requests">
             <h3>New booking requests</h3>
-            {requests.length === 0 && <p className="empty-state">No new booking requests.</p>}
-            {requests.map((r) => (
-              <div className="request-row" key={r.id}>
+
+            {loading && <p className="empty-state">Loading requests...</p>}
+
+            {!loading && pendingBookings.length === 0 && (
+              <p className="empty-state">No new booking requests.</p>
+            )}
+
+            {pendingBookings.map((booking) => (
+              <div className="request-row" key={booking._id}>
                 <div>
-                  <strong>{r.service}</strong>
-                  <p>{r.customer} · {r.time} · {r.payment}</p>
+                  <strong>{getServiceName(booking)}</strong>
+                  <p>
+                    {getCustomerName(booking)} ·{" "}
+                    {formatDate(booking.scheduledDate)}
+                  </p>
+                  <p>
+                    {getPaymentName(booking.paymentMethod)} · ₹
+                    {Number(booking.price || 0).toLocaleString("en-IN")}
+                  </p>
                 </div>
+
                 <div className="action-row">
-                  <button className="primary-btn" onClick={() => updateRequest(r.id, "accept")}>Accept</button>
-                  <button className="outline-btn" onClick={() => updateRequest(r.id, "decline")}>Decline</button>
+                  <button
+                    className="primary-btn"
+                    disabled={updatingId === booking._id}
+                    onClick={() =>
+                      updateBookingStatus(booking._id, "accepted")
+                    }
+                  >
+                    {updatingId === booking._id ? "Updating..." : "Accept"}
+                  </button>
+
+                  <button
+                    className="outline-btn"
+                    disabled={updatingId === booking._id}
+                    onClick={() =>
+                      updateBookingStatus(booking._id, "rejected")
+                    }
+                  >
+                    Decline
+                  </button>
                 </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Accepted jobs */}
+          <div className="dash-card" id="accepted">
+            <h3>Accepted jobs</h3>
+
+            {acceptedBookings.length === 0 && !loading && (
+              <p className="empty-state">No accepted jobs.</p>
+            )}
+
+            {acceptedBookings.map((booking) => (
+              <div className="request-row" key={booking._id}>
+                <div>
+                  <strong>{getServiceName(booking)}</strong>
+                  <p>
+                    {getCustomerName(booking)} ·{" "}
+                    {formatDate(booking.scheduledDate)}
+                  </p>
+                  <span className="status-pill warning">Accepted</span>
+                </div>
+
+                <div className="action-row">
+                  <button
+                    className="primary-btn"
+                    disabled={updatingId === booking._id}
+                    onClick={() =>
+                      updateBookingStatus(booking._id, "completed")
+                    }
+                  >
+                    {updatingId === booking._id
+                      ? "Updating..."
+                      : "Mark completed"}
+                  </button>
+
+                  <button
+                    className="outline-btn"
+                    onClick={() =>
+                      navigate(`/chat?booking=${booking._id}`)
+                    }
+                  >
+                    Chat
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Completed jobs */}
+          <div className="dash-card" id="completed">
+            <h3>Completed jobs</h3>
+
+            {completedBookings.length === 0 && !loading && (
+              <p className="empty-state">No completed jobs yet.</p>
+            )}
+
+            {completedBookings.map((booking) => (
+              <div className="request-row" key={booking._id}>
+                <div>
+                  <strong>{getServiceName(booking)}</strong>
+                  <p>
+                    {getCustomerName(booking)} ·{" "}
+                    {formatDate(booking.scheduledDate)}
+                  </p>
+                </div>
+                <span className="status-pill">Completed</span>
               </div>
             ))}
           </div>
         </section>
       </main>
+
+      <footer className="chat-footer">
+        <strong>Nearlink · Trusted local services</strong>
+        <span>About · Contact · Privacy Policy · Terms</span>
+      </footer>
     </div>
   );
 }

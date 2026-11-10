@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
 import "../App.css";
 
 const categories = [
@@ -68,21 +70,7 @@ function App() {
     <div className="nearlink-page">
       {/* NAVBAR */}
       <header className="nl-navbar">
-        <a href="#home" className="nl-logo">
-          <span className="nl-logo-icon"></span>
-          Nearlink
-        </a>
-
-        <nav className="nl-nav-links">
-          <a href="#home">Home</a>
-          <a href="#categories">Find services</a>
-          <a href="#provider-cta">Become a provider</a>
-        </nav>
-
-        <div className="nl-nav-actions">
-          <a href="#login" className="nl-login">Log in</a>
-          <a href="#signup" className="nl-signup">Signup</a>
-        </div>
+        <Navbar/>
       </header>
 
       {/* HERO */}
@@ -269,7 +257,7 @@ function App() {
             <h2>Offer your skills</h2>
             <p>Join as a provider and grow your local business.</p>
           </div>
-          <a href="#signup">Become a provider</a>
+          <Link to="/signup" className="nl-signup"> Become a provider</Link>
         </section>
       </main>
 

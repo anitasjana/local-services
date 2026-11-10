@@ -1,17 +1,27 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const categories = [
-  "Home repair",
-  "Cleaning",
-  "Tutoring",
-  "Beauty",
-  "Moving",
-  "Appliance repair",
-  "Plumbing",
-  "Electrical",
-];
+import api from "../services/api";
 
 function Categories() {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("/services");
+        setCategories(response.data.services || response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || "Unable to load categories.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   return (
     <div className="service-page">
       <header className="service-nav">
@@ -32,19 +42,32 @@ function Categories() {
 
         <h1 className="service-heading">All service categories</h1>
 
-        <div className="category-grid">
-          {categories.map((category) => (
-            <Link
-              to={`/providers?category=${encodeURIComponent(category)}`}
-              className="category-card"
-              key={category}
-            >
-              <div className="category-image">{category}</div>
-              <h3>{category}</h3>
-              <p>[X] providers · ★ [X] average</p>
-            </Link>
-          ))}
-        </div>
+        {loading && <p>Loading categories...</p>}
+        {error && <p className="no-providers">{error}</p>}
+
+        {!loading && !error && (
+          <div className="category-grid">
+            {categories.map((category) => (
+              <Link
+                to={`/providers?category=${encodeURIComponent(
+                  category.slug || category.name
+                )}`}
+                className="category-card"
+                key={category._id}
+              >
+                <div className="category-image">
+                  {category.icon || category.name}
+                </div>
+                <h3>{category.name}</h3>
+                <p>{category.description || "Explore available providers"}</p>
+              </Link>
+            ))}
+
+            {categories.length === 0 && (
+              <p>No service categories available yet.</p>
+            )}
+          </div>
+        )}
       </main>
 
       <ServiceFooter />

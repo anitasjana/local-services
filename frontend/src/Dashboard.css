@@ -280,6 +280,46 @@ th {
   color: #60767b;
 }
 
+/* PROVIDER DASHBOARD */
+
+.dash-content .muted-text {
+  color: #60767b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.dash-content .earnings-card h2 {
+  margin: 7px 0;
+}
+
+.dash-content .request-row {
+  flex-wrap: wrap;
+}
+
+.dash-content .request-row .action-row {
+  flex-wrap: wrap;
+}
+
+.dash-content button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dash-content .request-row p {
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .dash-content .request-row .action-row {
+    width: 100%;
+  }
+
+  .dash-content .request-row .action-row button {
+    flex: 1;
+  }
+}
+
+
 
 
 /* CUSTOMER DASHBOARD */

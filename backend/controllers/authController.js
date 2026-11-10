@@ -1,6 +1,7 @@
 
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const ProviderProfile = require("../models/ProviderProfile");
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -73,13 +74,14 @@ const registerUser = async (req, res) => {
 };
 
 // LOGIN USER
+
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
-        message: "Email and password are required"
+        message: "Email and password are required",
       });
     }
 
@@ -87,7 +89,7 @@ const loginUser = async (req, res) => {
 
     if (!user) {
       return res.status(401).json({
-        message: "Invalid email or password"
+        message: "Invalid email or password",
       });
     }
 
@@ -95,8 +97,37 @@ const loginUser = async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).json({
-        message: "Invalid email or password"
+        message: "Invalid email or password",
       });
+    }
+
+    // Provider approval check
+    if (user.role === "provider") {
+      const profile = await ProviderProfile.findOne({
+        user: user._id,
+      });
+
+      if (!profile) {
+        return res.status(403).json({
+          message: "Please complete your provider application first.",
+          approvalStatus: "not_submitted",
+        });
+      }
+
+      if (profile.approvalStatus === "pending") {
+        return res.status(403).json({
+          message: "Your provider application is awaiting admin approval.",
+          approvalStatus: "pending",
+        });
+      }
+
+      if (profile.approvalStatus === "rejected") {
+        return res.status(403).json({
+          message: "Your provider application was rejected.",
+          approvalStatus: "rejected",
+          rejectionReason: profile.rejectionReason,
+        });
+      }
     }
 
     const token = generateToken(user._id);
@@ -109,17 +140,18 @@ const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
-
   } catch (error) {
     console.error("Login Error:", error.message);
+
     return res.status(500).json({
-      message: "Server error during login"
+      message: "Server error during login",
     });
   }
 };
+
 
 module.exports = {
   registerUser,

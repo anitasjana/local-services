@@ -1,38 +1,43 @@
+
 const mongoose = require("mongoose");
 
 const ProviderProfile = require("../models/ProviderProfile");
 const Service = require("../models/Service");
 
-// Create provider profile
+// 1. Create provider profile
 const createProviderProfile = async (req, res) => {
   try {
     const { service, experience, location, price, bio } = req.body;
 
-    if (!service || experience === undefined ||
-        !location || price === undefined) {
+    if (
+      !service ||
+      experience === undefined ||
+      !location ||
+      price === undefined
+    ) {
       return res.status(400).json({
-        message: "Please provide all required fields"
+        message: "Please provide all required fields",
       });
     }
 
     const serviceExists = await Service.findOne({
       _id: service,
-      isActive: true
+      isActive: true,
     });
 
     if (!serviceExists) {
       return res.status(404).json({
-        message: "Service not found"
+        message: "Service not found",
       });
     }
 
     const existingProfile = await ProviderProfile.findOne({
-      user: req.user._id
+      user: req.user._id,
     });
 
     if (existingProfile) {
       return res.status(409).json({
-        message: "Provider profile already exists"
+        message: "Provider profile already exists",
       });
     }
 
@@ -42,34 +47,36 @@ const createProviderProfile = async (req, res) => {
       experience,
       location,
       price,
-      bio
+      bio,
+      approvalStatus: "pending",
     });
 
     const result = await profile.populate([
       { path: "user", select: "name" },
-      { path: "service", select: "name slug" }
+      { path: "service", select: "name slug" },
     ]);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Provider profile created successfully",
-      profile: result
+      profile: result,
     });
-
   } catch (error) {
-    console.error(error);
+    console.error("Create Provider Profile Error:", error);
 
-    res.status(500).json({
-      message: "Failed to create provider profile"
+    return res.status(500).json({
+      message: "Failed to create provider profile",
     });
   }
 };
 
-// Get all providers with optional filters
+// 2. Get all approved providers with optional filters
 const getProviders = async (req, res) => {
   try {
     const { service, location } = req.query;
 
-    const filter = {};
+    const filter = {
+      approvalStatus: "approved",
+    };
 
     if (service) {
       let serviceDoc;
@@ -77,19 +84,19 @@ const getProviders = async (req, res) => {
       if (mongoose.Types.ObjectId.isValid(service)) {
         serviceDoc = await Service.findOne({
           _id: service,
-          isActive: true
+          isActive: true,
         });
       } else {
         serviceDoc = await Service.findOne({
           slug: service.toLowerCase(),
-          isActive: true
+          isActive: true,
         });
       }
 
       if (!serviceDoc) {
         return res.status(200).json({
           count: 0,
-          providers: []
+          providers: [],
         });
       }
 
@@ -99,7 +106,7 @@ const getProviders = async (req, res) => {
     if (location) {
       filter.location = {
         $regex: location,
-        $options: "i"
+        $options: "i",
       };
     }
 
@@ -108,56 +115,145 @@ const getProviders = async (req, res) => {
       .populate("service", "name slug")
       .sort({ createdAt: -1 });
 
-    res.status(200).json({
+    return res.status(200).json({
       count: providers.length,
-      providers
+      providers,
     });
-
   } catch (error) {
-    console.error(error);
+    console.error("Get Providers Error:", error);
 
-    res.status(500).json({
-      message: "Failed to fetch providers"
+    return res.status(500).json({
+      message: "Failed to fetch providers",
     });
   }
 };
 
-// Get single provider details
+// 3. Get single approved provider details
 const getProviderById = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
-        message: "Invalid provider ID"
+        message: "Invalid provider ID",
       });
     }
 
-    const provider = await ProviderProfile.findById(id)
+    const provider = await ProviderProfile.findOne({
+      _id: id,
+      approvalStatus: "approved",
+    })
       .populate("user", "name")
       .populate("service", "name slug");
 
     if (!provider) {
       return res.status(404).json({
-        message: "Provider not found"
+        message: "Provider not found",
       });
     }
 
-    res.status(200).json({
-      provider
+    return res.status(200).json({
+      provider,
     });
-
   } catch (error) {
-    console.error(error);
+    console.error("Get Provider Error:", error);
 
-    res.status(500).json({
-      message: "Failed to fetch provider"
+    return res.status(500).json({
+      message: "Failed to fetch provider",
     });
   }
 };
 
+// 4. Admin: Get all pending provider applications
+const getPendingProviders = async (req, res) => {
+  try {
+    const providers = await ProviderProfile.find({
+      approvalStatus: "pending",
+    })
+      .populate("user", "name email phone")
+      .populate("service", "name slug")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      count: providers.length,
+      providers,
+    });
+  } catch (error) {
+    console.error("Pending Providers Error:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch pending providers",
+    });
+  }
+};
+
+// 5. Admin: Approve or reject provider application
+const updateProviderApproval = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, rejectionReason } = req.body;
+
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({
+        message: "Invalid approval status",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid provider ID",
+      });
+    }
+
+    const provider = await ProviderProfile.findById(id);
+
+    if (!provider) {
+      return res.status(404).json({
+        message: "Provider application not found",
+      });
+    }
+
+    if (provider.approvalStatus !== "pending") {
+      return res.status(400).json({
+        message: "This application has already been reviewed",
+      });
+    }
+
+    if (status === "rejected" && !rejectionReason?.trim()) {
+      return res.status(400).json({
+        message: "Rejection reason is required",
+      });
+    }
+
+    provider.approvalStatus = status;
+    provider.rejectionReason =
+      status === "rejected" ? rejectionReason.trim() : "";
+
+    await provider.save();
+
+    const result = await provider.populate([
+      { path: "user", select: "name email phone" },
+      { path: "service", select: "name slug" },
+    ]);
+
+    return res.status(200).json({
+      message: `Provider application ${status} successfully`,
+      provider: result,
+    });
+  } catch (error) {
+    console.error("Provider Approval Error:", error);
+
+    return res.status(500).json({
+      message: "Failed to update provider approval",
+    });
+  }
+};
+
+// Export all controller functions
 module.exports = {
   createProviderProfile,
   getProviders,
-  getProviderById
+  getProviderById,
+  getPendingProviders,
+  updateProviderApproval,
 };

@@ -1,24 +1,3 @@
-// import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import Home from "./pages/Home.jsx";
-// import Login from "./pages/Login.jsx";
-// import Signup from "./pages/Signup.jsx";
-
-// function App() {
-//   return (
-//     <BrowserRouter>
-//       <Routes>
-//         <Route path="/" element={<Home />} />
-//         <Route path="/login" element={<Login />} />
-//         <Route path="/signup" element={<Signup />} />
-//       </Routes>
-//     </BrowserRouter>
-//   );
-// }
-
-// export default App;
-
-
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -33,6 +12,7 @@ import ProviderDashboard from "./pages/ProviderDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Chat from "./pages/Chat";
 import WriteReview from "./pages/WriteReview";
+import ProviderOnboarding from "./pages/ProviderOnboarding";
 
 function App() {
   return (
@@ -50,6 +30,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/write-review" element={<WriteReview />} />
+        <Route path="/provider-onboarding" element={<ProviderOnboarding />} />
       </Routes>
     </BrowserRouter>
   );

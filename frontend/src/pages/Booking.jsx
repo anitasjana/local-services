@@ -1,17 +1,102 @@
-
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import "../App.css";
+import api from "../services/api";
 
 function Booking() {
-  const [service, setService] = useState("Fan installation");
-  const [payment, setPayment] = useState("Cash");
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const prices = {
-    "Fan installation": 299,
-    "Wiring repair": 499,
-    "Switchboard fix": 399,
+  const providerId = searchParams.get("provider");
+
+  const [provider, setProvider] = useState(null);
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("10:00");
+  const [address, setAddress] = useState("");
+  const [description, setDescription] = useState("");
+  const [payment, setPayment] = useState("cash");
+
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchProvider = async () => {
+      if (!providerId) {
+        setError("Provider ID is missing. Please select a provider first.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await api.get(`/providers/${providerId}`);
+        setProvider(response.data.provider || response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || "Unable to load provider.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProvider();
+  }, [providerId]);
+
+  const handleBooking = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    const token = localStorage.getItem("nearlink_token");
+    const user = JSON.parse(localStorage.getItem("nearlink_user") || "null");
+
+    if (!token || !user) {
+      navigate("/login");
+      return;
+    }
+
+    if (user.role !== "customer") {
+      setError("Only customer accounts can create bookings.");
+      return;
+    }
+
+    if (!provider || !date || !address.trim()) {
+      setError("Please complete all required fields.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const scheduledDate = new Date(`${date}T${time}:00`).toISOString();
+
+      const response = await api.post("/bookings", {
+        provider: provider._id,
+        scheduledDate,
+        address,
+        description,
+        paymentMethod: payment,
+      });
+
+      alert(response.data.message || "Booking created successfully!");
+      navigate("/customer-dashboard");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Booking failed. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) return <p>Loading booking details...</p>;
+
+  if (error && !provider) {
+    return (
+      <div className="nl-subpage">
+        <p>{error}</p>
+        <Link to="/providers">Back to providers</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="nl-subpage">
@@ -37,64 +122,125 @@ function Booking() {
         </div>
 
         <div className="nl-booking-layout">
-          <section className="nl-white-card nl-booking-form">
+          <form
+            className="nl-white-card nl-booking-form"
+            onSubmit={handleBooking}
+          >
             <h1>Book your service</h1>
 
             <label>Service</label>
-            <select value={service} onChange={(e) => setService(e.target.value)}>
-              <option>Fan installation</option>
-              <option>Wiring repair</option>
-              <option>Switchboard fix</option>
-            </select>
+            <input
+              type="text"
+              value={
+                provider.service?.name ||
+                provider.service?.title ||
+                "Local service"
+              }
+              readOnly
+            />
 
             <div className="nl-form-row">
               <div>
                 <label>Date</label>
-                <input type="date" />
+                <input
+                  type="date"
+                  value={date}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
               </div>
+
               <div>
                 <label>Time</label>
-                <select>
-                  <option>10:00 AM</option>
-                  <option>12:00 PM</option>
-                  <option>2:00 PM</option>
-                  <option>4:00 PM</option>
+                <select
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                >
+                  <option value="10:00">10:00 AM</option>
+                  <option value="12:00">12:00 PM</option>
+                  <option value="14:00">2:00 PM</option>
+                  <option value="16:00">4:00 PM</option>
                 </select>
               </div>
             </div>
 
             <label>Address</label>
-            <input type="text" placeholder="House, street, area" />
+            <input
+              type="text"
+              placeholder="House, street, area"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              required
+            />
 
             <label>Describe the problem</label>
-            <textarea rows="4"></textarea>
+            <textarea
+              rows="4"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe the service you need..."
+            />
 
             <h3>Payment method</h3>
+
             <div className="nl-payment-options">
-              {["Cash", "Online", "Escrow (held until job done)"].map((item) => (
-                <label key={item}>
+              {[
+                ["cash", "Cash"],
+                ["online", "Online"],
+                ["escrow", "Escrow (held until job done)"],
+              ].map(([value, label]) => (
+                <label key={value}>
                   <input
                     type="radio"
                     name="payment"
-                    value={item}
-                    checked={payment === item}
-                    onChange={() => setPayment(item)}
+                    value={value}
+                    checked={payment === value}
+                    onChange={() => setPayment(value)}
                   />
-                  {item}
+                  {label}
                 </label>
               ))}
             </div>
-          </section>
+
+            {error && (
+              <p style={{ color: "red", marginTop: "10px" }}>{error}</p>
+            )}
+
+            <button
+              type="submit"
+              className="nl-primary-btn nl-full-btn"
+              disabled={submitting}
+            >
+              {submitting ? "Creating booking..." : "Confirm booking"}
+            </button>
+          </form>
 
           <aside className="nl-white-card nl-booking-summary">
             <h2>Summary</h2>
-            <div><span>Provider</span><strong>Provider name</strong></div>
-            <div><span>Estimated price</span><strong>₹{prices[service]}</strong></div>
-            <button className="nl-primary-btn nl-full-btn">
-              Confirm booking
-            </button>
-            <Link to="/provider/1" className="nl-outline-btn nl-full-btn">
-              Back
+
+            <div>
+              <span>Provider</span>
+              <strong>{provider.user?.name || provider.name || "Provider"}</strong>
+            </div>
+
+            <div>
+              <span>Service</span>
+              <strong>
+                {provider.service?.name || provider.service?.title || "Service"}
+              </strong>
+            </div>
+
+            <div>
+              <span>Estimated price</span>
+              <strong>₹{provider.price || 0}</strong>
+            </div>
+
+            <Link
+              to={`/provider/${provider._id}`}
+              className="nl-outline-btn nl-full-btn"
+            >
+              Back to provider
             </Link>
           </aside>
         </div>

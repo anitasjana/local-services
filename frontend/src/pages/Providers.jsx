@@ -1,49 +1,75 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-
-const providerData = [
-  { id: 1, name: "Rahul Sharma", category: "Electrician", rating: 4.9, reviews: 180, price: 299 },
-  { id: 2, name: "Amit Das", category: "Electrician", rating: 4.8, reviews: 142, price: 349 },
-  { id: 3, name: "Sourav Roy", category: "Electrician", rating: 4.6, reviews: 75, price: 249 },
-  { id: 4, name: "Priya Singh", category: "Cleaner", rating: 4.5, reviews: 60, price: 199 },
-  { id: 5, name: "Rakesh Kumar", category: "Plumber", rating: 4.5, reviews: 52, price: 299 },
-  { id: 6, name: "Anil Das", category: "Electrician", rating: 4.4, reviews: 40, price: 249 },
-];
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import api from "../services/api";
 
 function Providers() {
-  const params = new URLSearchParams(window.location.search);
-  const initialCategory = params.get("category") || "Electrician";
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get("category") || "";
 
-  const [search, setSearch] = useState(
-    initialCategory.toLowerCase() === "electrician"
-      ? "electrician near me"
-      : initialCategory.toLowerCase()
-  );
+  const [search, setSearch] = useState(initialCategory);
   const [category, setCategory] = useState(initialCategory);
-  const [verified, setVerified] = useState(true);
   const [available, setAvailable] = useState(false);
   const [price, setPrice] = useState("all");
-  const [sort, setSort] = useState("rating");
+  const [sort, setSort] = useState("price");
   const [area, setArea] = useState("");
+  const [providers, setProviders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const filteredProviders = providerData
-    .filter((provider) =>
-      provider.category.toLowerCase().includes(category.toLowerCase())
-    )
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        setLoading(true);
+
+        const params = {};
+        if (category) params.service = category;
+        if (area) params.location = area;
+
+        const response = await api.get("/providers", { params });
+
+        setProviders(response.data.providers || response.data);
+        setError("");
+      } catch (err) {
+        setError(err.response?.data?.message || "Unable to load providers.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProviders();
+  }, [category, area]);
+
+  const getProviderName = (provider) =>
+    provider.user?.name || provider.name || "Provider";
+
+  const getServiceName = (provider) =>
+    provider.service?.name || provider.service?.title || "";
+
+  const filteredProviders = providers
     .filter((provider) => {
-      if (price === "under500") return provider.price < 500;
-      if (price === "500to1000") return provider.price >= 500 && provider.price <= 1000;
-      if (price === "above1000") return provider.price > 1000;
+      const name = getProviderName(provider).toLowerCase();
+      const service = getServiceName(provider).toLowerCase();
+      const searchText = search.toLowerCase();
+
+      return name.includes(searchText) || service.includes(searchText);
+    })
+    .filter((provider) => !available || provider.isAvailable)
+    .filter((provider) => {
+      const amount = Number(provider.price || 0);
+
+      if (price === "under500") return amount < 500;
+      if (price === "500to1000") return amount >= 500 && amount <= 1000;
+      if (price === "above1000") return amount > 1000;
+
       return true;
     })
-    .filter((provider) =>
-      provider.name.toLowerCase().includes(search.toLowerCase()) ||
-      provider.category.toLowerCase().includes(search.toLowerCase()) ||
-      search.toLowerCase().includes(provider.category.toLowerCase())
-    )
-    .sort((a, b) =>
-      sort === "price" ? a.price - b.price : b.rating - a.rating
-    );
+    .sort((a, b) => {
+      if (sort === "price") {
+        return Number(a.price || 0) - Number(b.price || 0);
+      }
+
+      return 0;
+    });
 
   return (
     <div className="service-page">
@@ -77,22 +103,13 @@ function Providers() {
 
         <div className="active-filters">
           Active filters:
-          <span>{category} ×</span>
-          {verified && <span>Verified only ×</span>}
+          {category && <span>{category} ×</span>}
+          {available && <span>Available today ×</span>}
         </div>
 
         <div className="provider-layout">
           <aside className="filter-panel">
             <h3>Filters</h3>
-
-            <label>
-              <input
-                type="checkbox"
-                checked={verified}
-                onChange={(e) => setVerified(e.target.checked)}
-              />
-              Verified only
-            </label>
 
             <label>
               <input
@@ -104,17 +121,12 @@ function Providers() {
             </label>
 
             <h3>Category</h3>
-            {["Electrician", "Plumber", "Cleaner", "Tutor"].map((item) => (
-              <label key={item}>
-                <input
-                  type="radio"
-                  name="category"
-                  checked={category === item}
-                  onChange={() => setCategory(item)}
-                />
-                {item}
-              </label>
-            ))}
+            <input
+              type="text"
+              placeholder="Enter service name"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            />
 
             <h3>Price</h3>
             {[
@@ -136,10 +148,10 @@ function Providers() {
 
             <label className="area-label">Location</label>
             <select value={area} onChange={(e) => setArea(e.target.value)}>
-              <option value="">Select area</option>
-              <option>Kolkata</option>
-              <option>Howrah</option>
-              <option>Salt Lake</option>
+              <option value="">All locations</option>
+              <option value="Kolkata">Kolkata</option>
+              <option value="Howrah">Howrah</option>
+              <option value="Salt Lake">Salt Lake</option>
             </select>
           </aside>
 
@@ -147,31 +159,51 @@ function Providers() {
             <div className="results-heading">
               <h2>{filteredProviders.length} providers found</h2>
               <select value={sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="rating">Sort: Highest rating</option>
                 <option value="price">Sort: Lowest price</option>
               </select>
             </div>
 
-            <div className="provider-grid">
-              {filteredProviders.map((provider) => (
-                <article className="provider-card" key={provider.id}>
-                  <div className="provider-placeholder">
-                    {provider.category}
-                  </div>
-                  <h3>{provider.name}</h3>
-                  <p>★ {provider.rating} ({provider.reviews} reviews) · <span>Verified</span></p>
-                  <div className="provider-card-bottom">
-                    <strong>From ₹{provider.price}</strong>
-                    <Link to={`/provider/${provider.id}`} className="service-primary">
-                      View details
-                    </Link>
-                  </div>
-                </article>
-              ))}
-              {filteredProviders.length === 0 && (
-                <p className="no-providers">No providers found. Try another search.</p>
-              )}
-            </div>
+            {loading && <p>Loading providers...</p>}
+            {error && <p className="no-providers">{error}</p>}
+
+            {!loading && !error && (
+              <div className="provider-grid">
+                {filteredProviders.map((provider) => (
+                  <article className="provider-card" key={provider._id}>
+                    <div className="provider-placeholder">
+                      {getServiceName(provider) || "Service Provider"}
+                    </div>
+
+                    <h3>{getProviderName(provider)}</h3>
+
+                    <p>
+                      {getServiceName(provider)} ·{" "}
+                      <span>
+                        {provider.isAvailable ? "Available" : "Currently unavailable"}
+                      </span>
+                    </p>
+
+                    <p>{provider.location || "Location not specified"}</p>
+
+                    <div className="provider-card-bottom">
+                      <strong>From ₹{provider.price || 0}</strong>
+                      <Link
+                        to={`/provider/${provider._id}`}
+                        className="service-primary"
+                      >
+                        View details
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+
+                {filteredProviders.length === 0 && (
+                  <p className="no-providers">
+                    No providers found. Try another search or filter.
+                  </p>
+                )}
+              </div>
+            )}
           </section>
         </div>
       </main>

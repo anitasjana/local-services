@@ -13,6 +13,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Chat from "./pages/Chat";
 import WriteReview from "./pages/WriteReview";
 import ProviderOnboarding from "./pages/ProviderOnboarding";
+import AddService from "./pages/AddService";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         <Route path="/chat" element={<Chat />} />
         <Route path="/write-review" element={<WriteReview />} />
         <Route path="/provider-onboarding" element={<ProviderOnboarding />} />
+        <Route path="/admin/add-service" element={<AddService />} />
       </Routes>
     </BrowserRouter>
   );

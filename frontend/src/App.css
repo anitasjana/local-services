@@ -322,6 +322,46 @@
   color: #60777a;
 }
 
+.category-search {
+  display: flex;
+  gap: 12px;
+  max-width: 650px;
+  margin: 25px 0 35px;
+}
+
+.category-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid #dce5e3;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+}
+
+.category-search input:focus {
+  border-color: #168b78;
+}
+
+.category-search button {
+  padding: 14px 25px;
+  border: none;
+  border-radius: 8px;
+  background: #168b78;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.category-search button:hover {
+  background: #116e60;
+}
+
+@media (max-width: 500px) {
+  .category-search {
+    flex-direction: column;
+  }
+}
 /* PROVIDERS */
 
 .nl-providers {
@@ -2608,6 +2648,28 @@
   min-height: 180px;
 }
 
+
+.admin-service-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-add-service-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 7px;
+  background: #168b78;
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-add-service-btn:hover {
+  background: #116e60;
+}
 
 /* ==================================
    RESPONSIVE DESIGN

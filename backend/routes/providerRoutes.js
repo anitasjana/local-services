@@ -8,6 +8,7 @@ const {
   getProviderById,
   getPendingProviders,
   updateProviderApproval,
+  getAdminStats,
 } = require("../controllers/providerController");
 
 const protect = require("../middleware/authMiddleware");
@@ -39,6 +40,14 @@ router.post(
   createProviderProfile
 );
 
+router.get(
+  "/admin/stats",
+  protect,
+  authorizeRoles("admin"),
+  getAdminStats
+);
+
 router.get("/:id", getProviderById);
 
 module.exports = router;
+

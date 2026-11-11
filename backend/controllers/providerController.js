@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 
 const ProviderProfile = require("../models/ProviderProfile");
 const Service = require("../models/Service");
+const User = require("../models/User");
 
 // 1. Create provider profile
 const createProviderProfile = async (req, res) => {
@@ -164,6 +165,44 @@ const getProviderById = async (req, res) => {
   }
 };
 
+// Admin: Dashboard statistics
+const getAdminStats = async (req, res) => {
+  try {
+    const [
+      totalCustomers,
+      totalProviders,
+      totalProviderProfiles,
+      pendingProviders,
+      approvedProviders,
+      rejectedProviders,
+    ] = await Promise.all([
+      User.countDocuments({ role: "customer" }),
+      User.countDocuments({ role: "provider" }),
+      ProviderProfile.countDocuments(),
+      ProviderProfile.countDocuments({ approvalStatus: "pending" }),
+      ProviderProfile.countDocuments({ approvalStatus: "approved" }),
+      ProviderProfile.countDocuments({ approvalStatus: "rejected" }),
+    ]);
+
+    return res.status(200).json({
+      stats: {
+        totalCustomers,
+        totalProviders,
+        totalProviderProfiles,
+        pendingProviders,
+        approvedProviders,
+        rejectedProviders,
+      },
+    });
+  } catch (error) {
+    console.error("Admin Stats Error:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch admin statistics",
+    });
+  }
+};
+
 // 4. Admin: Get all pending provider applications
 const getPendingProviders = async (req, res) => {
   try {
@@ -256,4 +295,5 @@ module.exports = {
   getProviderById,
   getPendingProviders,
   updateProviderApproval,
+  getAdminStats,
 };

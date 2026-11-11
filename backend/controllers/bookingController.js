@@ -111,6 +111,84 @@ const getMyBookings = async (req, res) => {
 };
 
 
+// Admin Booking Statistics
+const getAdminBookingStats = async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+
+    const startDate = new Date(currentYear, 0, 1);
+    const endDate = new Date(currentYear + 1, 0, 1);
+
+    const [
+      totalBookings,
+      completedBookings,
+      cancelledBookings,
+      pendingBookings,
+      acceptedBookings,
+      rejectedBookings,
+      monthlyBookings,
+    ] = await Promise.all([
+      Booking.countDocuments(),
+
+      Booking.countDocuments({ status: "completed" }),
+      Booking.countDocuments({ status: "cancelled" }),
+      Booking.countDocuments({ status: "pending" }),
+      Booking.countDocuments({ status: "accepted" }),
+      Booking.countDocuments({ status: "rejected" }),
+
+      Booking.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: startDate,
+              $lt: endDate,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: { $month: "$createdAt" },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+    ]);
+
+    const bookingsByMonth = Array.from(
+      { length: 12 },
+      (_, index) => {
+        const month = index + 1;
+        const found = monthlyBookings.find(
+          (item) => item._id === month
+        );
+
+        return found ? found.count : 0;
+      }
+    );
+
+    return res.status(200).json({
+      stats: {
+        totalBookings,
+        completedBookings,
+        cancelledBookings,
+        pendingBookings,
+        acceptedBookings,
+        rejectedBookings,
+        inProgressBookings: pendingBookings + acceptedBookings,
+        bookingsByMonth,
+      },
+    });
+  } catch (error) {
+    console.error("Admin Booking Stats Error:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch booking statistics",
+    });
+  }
+};
+
+
 // Update Booking Status
 const updateBookingStatus = async (req, res) => {
   try {
@@ -177,5 +255,6 @@ const updateBookingStatus = async (req, res) => {
 module.exports = {
   createBooking,
   getMyBookings,
-  updateBookingStatus
+  updateBookingStatus,
+  getAdminBookingStats,
 };

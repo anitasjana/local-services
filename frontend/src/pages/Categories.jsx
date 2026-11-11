@@ -1,9 +1,12 @@
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../services/api";
 
 function Categories() {
   const [categories, setCategories] = useState([]);
+  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -13,7 +16,9 @@ function Categories() {
         const response = await api.get("/services");
         setCategories(response.data.services || response.data);
       } catch (err) {
-        setError(err.response?.data?.message || "Unable to load categories.");
+        setError(
+          err.response?.data?.message || "Unable to load categories."
+        );
       } finally {
         setLoading(false);
       }
@@ -22,10 +27,24 @@ function Categories() {
     fetchCategories();
   }, []);
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearchTerm(search.trim().toLowerCase());
+  };
+
+  const filteredCategories = categories.filter((category) =>
+    `${category.name} ${category.description || ""}`
+      .toLowerCase()
+      .includes(searchTerm)
+  );
+
   return (
     <div className="service-page">
       <header className="service-nav">
-        <Link to="/" className="service-logo"><span />Nearlink</Link>
+        <Link to="/" className="service-logo">
+          <span />Nearlink
+        </Link>
+
         <nav>
           <Link to="/">Home</Link>
           <Link to="/providers">Find services</Link>
@@ -40,14 +59,35 @@ function Categories() {
           <Link to="/">Home</Link> › All categories
         </p>
 
-        <h1 className="service-heading">All service categories</h1>
+        <h1 className="service-heading">
+          All service categories
+        </h1>
+
+        <p>Find the right service for your needs.</p>
+
+        {/* Category Search */}
+        <form className="category-search" onSubmit={handleSearch}>
+          <input
+            type="text"
+            placeholder="Search services (e.g. Cleaning, Plumbing)"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          <button type="submit">
+            Search
+          </button>
+        </form>
 
         {loading && <p>Loading categories...</p>}
-        {error && <p className="no-providers">{error}</p>}
+
+        {error && (
+          <p className="no-providers">{error}</p>
+        )}
 
         {!loading && !error && (
           <div className="category-grid">
-            {categories.map((category) => (
+            {filteredCategories.map((category) => (
               <Link
                 to={`/providers?category=${encodeURIComponent(
                   category.slug || category.name
@@ -58,13 +98,18 @@ function Categories() {
                 <div className="category-image">
                   {category.icon || category.name}
                 </div>
+
                 <h3>{category.name}</h3>
-                <p>{category.description || "Explore available providers"}</p>
+
+                <p>
+                  {category.description ||
+                    "Explore available providers"}
+                </p>
               </Link>
             ))}
 
-            {categories.length === 0 && (
-              <p>No service categories available yet.</p>
+            {filteredCategories.length === 0 && (
+              <p>No matching categories found.</p>
             )}
           </div>
         )}

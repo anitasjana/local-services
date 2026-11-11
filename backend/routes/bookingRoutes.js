@@ -4,7 +4,8 @@ const router = express.Router();
 const {
   createBooking,
   getMyBookings,
-  updateBookingStatus
+  updateBookingStatus,
+  getAdminBookingStats,
 } = require("../controllers/bookingController");
 
 const protect = require("../middleware/authMiddleware");
@@ -22,6 +23,13 @@ router.get(
   protect,
   authorizeRoles("customer", "provider"),
   getMyBookings
+);
+
+router.get(
+  "/admin/stats",
+  protect,
+  authorizeRoles("admin"),
+  getAdminBookingStats
 );
 
 router.patch(

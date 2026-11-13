@@ -45,8 +45,8 @@ function Signup() {
       });
 
       if (role === "provider") {
-        localStorage.setItem("nearlink_token", response.data.token);
-        localStorage.setItem(
+        sessionStorage.setItem("nearlink_token", response.data.token);
+        sessionStorage.setItem(
           "nearlink_user",
           JSON.stringify(response.data.user)
         );

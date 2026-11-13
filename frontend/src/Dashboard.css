@@ -44,12 +44,16 @@
 }
 
 .avatar {
-  display: inline-block;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: #2b4a72;
-  flex-shrink: 0;
+  object-fit: cover;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #168b78;
+  color: white;
+  font-weight: 600;
 }
 
 .dash-layout {

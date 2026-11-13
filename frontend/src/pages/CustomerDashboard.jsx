@@ -7,16 +7,27 @@ import api from "../services/api";
 function CustomerDashboard() {
   const navigate = useNavigate();
 
+  // Logged-in customer information
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("nearlink_user") || "{}");
+    } catch {
+      return {};
+    }
+  });
+
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
 
+  // Fetch customer bookings
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const response = await api.get("/bookings");
         const data = response.data.bookings || response.data;
+
         setBookings(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(
@@ -30,6 +41,7 @@ function CustomerDashboard() {
     fetchBookings();
   }, []);
 
+  // Active bookings
   const activeBookings = useMemo(
     () =>
       bookings.filter((booking) =>
@@ -38,32 +50,38 @@ function CustomerDashboard() {
     [bookings]
   );
 
+  // Completed bookings
   const completedBookings = useMemo(
     () => bookings.filter((booking) => booking.status === "completed"),
     [bookings]
   );
 
+  // Filter bookings
   const visibleBookings = useMemo(() => {
     if (filter === "active") return activeBookings;
     if (filter === "completed") return completedBookings;
     return bookings;
   }, [bookings, filter, activeBookings, completedBookings]);
 
+  // Total booking value
   const totalValue = bookings.reduce(
     (total, booking) => total + (Number(booking.price) || 0),
     0
   );
 
+  // Provider name
   const getProviderName = (booking) =>
     booking.provider?.user?.name ||
     booking.provider?.name ||
     "Provider";
 
+  // Service name
   const getServiceName = (booking) =>
     booking.service?.name ||
     booking.service?.title ||
     "Service";
 
+  // Booking status labels
   const getStatusLabel = (status) => {
     const labels = {
       pending: "Requested",
@@ -76,6 +94,7 @@ function CustomerDashboard() {
     return labels[status] || status || "Unknown";
   };
 
+  // Payment method labels
   const getPaymentLabel = (method) => {
     const labels = {
       cash: "Cash",
@@ -86,6 +105,7 @@ function CustomerDashboard() {
     return labels[method] || method || "Not specified";
   };
 
+  // Format date
   const formatDate = (date) => {
     if (!date) return "Date not set";
 
@@ -95,16 +115,19 @@ function CustomerDashboard() {
     });
   };
 
+  // Logout
   const handleLogout = () => {
-    localStorage.removeItem("nearlink_token");
-    localStorage.removeItem("nearlink_user");
+    sessionStorage.removeItem("nearlink_token");
+    sessionStorage.removeItem("nearlink_user");
     navigate("/login");
   };
 
+  // Open chat
   const openChat = (booking) => {
     navigate(`/chat?booking=${booking._id}`);
   };
 
+  // Open review
   const openReview = (booking) => {
     navigate(`/write-review?booking=${booking._id}`);
   };
@@ -119,10 +142,24 @@ function CustomerDashboard() {
         </Link>
 
         <nav>
+          <Link to="/">Home</Link>
+          <Link to="/categories">Find services</Link>
           <Link to="/customer-dashboard">Customer</Link>
-          <Link to="/provider-dashboard">Provider</Link>
           <Link to="/login?role=admin">Admin</Link>
-          <span className="avatar"></span>
+
+          {/* Customer profile image or initial */}
+          {user.profileImage ? (
+            <img
+              src={`http://localhost:5000${user.profileImage}`}
+              alt={user.name || "Customer"}
+              className="avatar"
+            />
+          ) : (
+            <span className="avatar">
+              {user.name?.charAt(0).toUpperCase() || "C"}
+            </span>
+          )}
+
           <button className="outline-btn" onClick={handleLogout}>
             Log out
           </button>
@@ -144,17 +181,21 @@ function CustomerDashboard() {
 
         {/* Main content */}
         <section className="dash-content">
+
           {/* Welcome */}
           <div className="customer-welcome">
             <div>
-              <h1>Welcome back!</h1>
-              <p>Manage your bookings, payments and reviews in one place.</p>
+              <h1>Welcome back, {user.name || "Customer"}!</h1>
+              <p>
+                Manage your bookings, payments and reviews in one place.
+              </p>
             </div>
 
             <div className="action-row">
               <Link to="/categories" className="outline-btn">
                 Browse categories
               </Link>
+
               <Link to="/categories" className="orange-btn">
                 Find services
               </Link>
@@ -181,9 +222,12 @@ function CustomerDashboard() {
             </div>
           </div>
 
+          {/* Total booking value */}
           <div className="dash-card">
             <span className="muted-text">Total booking value</span>
+
             <h2>₹{totalValue.toLocaleString("en-IN")}</h2>
+
             <p className="muted-text">
               This is the total value of your bookings, not confirmed payments.
             </p>
@@ -201,12 +245,14 @@ function CustomerDashboard() {
                 >
                   All
                 </button>
+
                 <button
                   className={filter === "active" ? "selected" : ""}
                   onClick={() => setFilter("active")}
                 >
                   Active
                 </button>
+
                 <button
                   className={filter === "completed" ? "selected" : ""}
                   onClick={() => setFilter("completed")}
@@ -236,8 +282,11 @@ function CustomerDashboard() {
                     {visibleBookings.map((booking) => (
                       <tr key={booking._id}>
                         <td>{booking._id.slice(-6).toUpperCase()}</td>
+
                         <td>{getServiceName(booking)}</td>
+
                         <td>{getProviderName(booking)}</td>
+
                         <td>
                           <span
                             className={`status-pill ${
@@ -249,7 +298,9 @@ function CustomerDashboard() {
                             {getStatusLabel(booking.status)}
                           </span>
                         </td>
+
                         <td>{getPaymentLabel(booking.paymentMethod)}</td>
+
                         <td>
                           {booking.status === "completed" ? (
                             <button
@@ -274,7 +325,8 @@ function CustomerDashboard() {
 
                 {visibleBookings.length === 0 && (
                   <p className="empty-state">
-                    No bookings found. <Link to="/categories">Find services</Link>
+                    No bookings found.{" "}
+                    <Link to="/categories">Find services</Link>
                   </p>
                 )}
               </div>
@@ -287,17 +339,23 @@ function CustomerDashboard() {
 
             {activeBookings.length === 0 && !loading ? (
               <div className="dash-card">
-                <p className="empty-state">You have no active bookings.</p>
+                <p className="empty-state">
+                  You have no active bookings.
+                </p>
               </div>
             ) : (
               activeBookings.map((booking) => (
-                <div className="dash-card featured-booking" key={booking._id}>
+                <div
+                  className="dash-card featured-booking"
+                  key={booking._id}
+                >
                   <div className="booking-title-row">
                     <div>
                       <strong>
                         #{booking._id.slice(-6).toUpperCase()} ·{" "}
                         {getServiceName(booking)}
                       </strong>
+
                       <p>
                         {formatDate(booking.scheduledDate)} ·{" "}
                         {getProviderName(booking)}
@@ -342,9 +400,13 @@ function CustomerDashboard() {
                   {completedBookings.map((booking) => (
                     <tr key={booking._id}>
                       <td>{booking._id.slice(-6).toUpperCase()}</td>
+
                       <td>{getServiceName(booking)}</td>
+
                       <td>{getProviderName(booking)}</td>
+
                       <td>{getPaymentLabel(booking.paymentMethod)}</td>
+
                       <td>
                         <button
                           className="outline-btn small-btn"
@@ -359,7 +421,9 @@ function CustomerDashboard() {
               </table>
 
               {!loading && completedBookings.length === 0 && (
-                <p className="empty-state">No completed bookings yet.</p>
+                <p className="empty-state">
+                  No completed bookings yet.
+                </p>
               )}
             </div>
           </div>
@@ -367,6 +431,7 @@ function CustomerDashboard() {
           {/* Payment history */}
           <div className="dash-card" id="payment-history">
             <h2>Payment history</h2>
+
             <div className="table-wrap">
               <table>
                 <thead>
@@ -384,12 +449,20 @@ function CustomerDashboard() {
                     <tr key={booking._id}>
                       <td>
                         {booking.scheduledDate
-                          ? new Date(booking.scheduledDate).toLocaleDateString()
+                          ? new Date(
+                              booking.scheduledDate
+                            ).toLocaleDateString()
                           : "—"}
                       </td>
+
                       <td>{booking._id.slice(-6).toUpperCase()}</td>
+
                       <td>{getPaymentLabel(booking.paymentMethod)}</td>
-                      <td>₹{Number(booking.price || 0).toLocaleString("en-IN")}</td>
+
+                      <td>
+                        ₹{Number(booking.price || 0).toLocaleString("en-IN")}
+                      </td>
+
                       <td>Mock payment</td>
                     </tr>
                   ))}
@@ -397,7 +470,9 @@ function CustomerDashboard() {
               </table>
 
               {!loading && bookings.length === 0 && (
-                <p className="empty-state">No payment records available.</p>
+                <p className="empty-state">
+                  No payment records available.
+                </p>
               )}
             </div>
           </div>
@@ -406,10 +481,12 @@ function CustomerDashboard() {
           <div className="dash-card" id="my-reviews">
             <div className="provider-heading">
               <h2>My reviews</h2>
+
               <Link to="/write-review" className="primary-btn">
                 Write a review
               </Link>
             </div>
+
             <p className="empty-state">
               Your submitted reviews will appear here when the review API is connected.
             </p>
@@ -419,10 +496,12 @@ function CustomerDashboard() {
           <div className="dash-card" id="saved-providers">
             <div className="provider-heading">
               <h2>Saved providers</h2>
+
               <Link to="/providers" className="outline-btn">
                 Find providers
               </Link>
             </div>
+
             <p className="empty-state">
               You haven't saved any providers yet. Saved-provider functionality
               will be added with its backend API.
@@ -432,16 +511,20 @@ function CustomerDashboard() {
           {/* Support */}
           <div className="dash-card" id="report-support">
             <h2>Report / support</h2>
+
             <p className="empty-state">
               Support reporting will be available after the support API is added.
             </p>
+
             <Link to="/chat" className="outline-btn">
               Open messages
             </Link>
           </div>
+
         </section>
       </main>
 
+      {/* Footer */}
       <footer className="chat-footer">
         <strong>Nearlink · Trusted local services</strong>
         <span>About · Contact · Privacy Policy · Terms</span>

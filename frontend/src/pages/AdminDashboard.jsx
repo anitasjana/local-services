@@ -21,8 +21,8 @@ function AdminDashboard() {
   const adminEmail = storedUser.email || "Administrator";
 
   const logout = () => {
-    localStorage.removeItem("nearlink_token");
-    localStorage.removeItem("nearlink_user");
+    sessionStorage.removeItem("nearlink_token");
+    sessionStorage.removeItem("nearlink_user");
 
     navigate("/login");
   };

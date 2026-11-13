@@ -1,5 +1,7 @@
+
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+
 import "../App.css";
 import api from "../services/api";
 
@@ -20,6 +22,7 @@ function Booking() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Fetch provider details
   useEffect(() => {
     const fetchProvider = async () => {
       if (!providerId) {
@@ -41,12 +44,22 @@ function Booking() {
     fetchProvider();
   }, [providerId]);
 
+  // Create booking
   const handleBooking = async (e) => {
     e.preventDefault();
     setError("");
 
-    const token = localStorage.getItem("nearlink_token");
-    const user = JSON.parse(localStorage.getItem("nearlink_user") || "null");
+    // Read login information from this tab's session
+    let user = null;
+    const token = sessionStorage.getItem("nearlink_token");
+
+    try {
+      user = JSON.parse(
+        sessionStorage.getItem("nearlink_user") || "null"
+      );
+    } catch {
+      user = null;
+    }
 
     if (!token || !user) {
       navigate("/login");
@@ -54,7 +67,7 @@ function Booking() {
     }
 
     if (user.role !== "customer") {
-      setError("Only customer accounts can create bookings.");
+      setError("Please log in with a customer account to create a booking.");
       return;
     }
 
@@ -66,28 +79,34 @@ function Booking() {
     try {
       setSubmitting(true);
 
-      const scheduledDate = new Date(`${date}T${time}:00`).toISOString();
+      const scheduledDate = new Date(
+        `${date}T${time}:00`
+      ).toISOString();
 
       const response = await api.post("/bookings", {
         provider: provider._id,
         scheduledDate,
-        address,
-        description,
+        address: address.trim(),
+        description: description.trim(),
         paymentMethod: payment,
       });
 
       alert(response.data.message || "Booking created successfully!");
+
       navigate("/customer-dashboard");
     } catch (err) {
       setError(
-        err.response?.data?.message || "Booking failed. Please try again."
+        err.response?.data?.message ||
+        "Booking failed. Please try again."
       );
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) return <p>Loading booking details...</p>;
+  if (loading) {
+    return <p>Loading booking details...</p>;
+  }
 
   if (error && !provider) {
     return (
@@ -98,12 +117,23 @@ function Booking() {
     );
   }
 
+  if (!provider) {
+    return (
+      <div className="nl-subpage">
+        <p>Provider details could not be loaded.</p>
+        <Link to="/providers">Back to providers</Link>
+      </div>
+    );
+  }
+
   return (
     <div className="nl-subpage">
       <header className="nl-subnav">
         <Link to="/" className="nl-logo">
-          <span className="nl-logo-icon"></span> Nearlink
+          <span className="nl-logo-icon"></span>
+          Nearlink
         </Link>
+
         <nav>
           <Link to="/">Home</Link>
           <Link to="/categories">Find services</Link>
@@ -204,7 +234,9 @@ function Booking() {
             </div>
 
             {error && (
-              <p style={{ color: "red", marginTop: "10px" }}>{error}</p>
+              <p style={{ color: "red", marginTop: "10px" }}>
+                {error}
+              </p>
             )}
 
             <button
@@ -221,13 +253,17 @@ function Booking() {
 
             <div>
               <span>Provider</span>
-              <strong>{provider.user?.name || provider.name || "Provider"}</strong>
+              <strong>
+                {provider.user?.name || provider.name || "Provider"}
+              </strong>
             </div>
 
             <div>
               <span>Service</span>
               <strong>
-                {provider.service?.name || provider.service?.title || "Service"}
+                {provider.service?.name ||
+                  provider.service?.title ||
+                  "Service"}
               </strong>
             </div>
 

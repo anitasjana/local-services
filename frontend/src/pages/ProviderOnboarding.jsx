@@ -8,7 +8,7 @@ function ProviderOnboarding() {
   const navigate = useNavigate();
 
   const savedUser = JSON.parse(
-    localStorage.getItem("nearlink_user") || "{}"
+    sessionStorage.getItem("nearlink_user") || "{}"
   );
 
   const [services, setServices] = useState([]);
@@ -70,8 +70,8 @@ function ProviderOnboarding() {
 
       // Remove the temporary signup session.
       // Provider must log in again after admin approval.
-      localStorage.removeItem("nearlink_token");
-      localStorage.removeItem("nearlink_user");
+      sessionStorage.removeItem("nearlink_token");
+      sessionStorage.removeItem("nearlink_user");
 
       setSubmitted(true);
     } catch (err) {
@@ -85,8 +85,8 @@ function ProviderOnboarding() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("nearlink_token");
-    localStorage.removeItem("nearlink_user");
+    sessionStorage.removeItem("nearlink_token");
+    sessionStorage.removeItem("nearlink_user");
     navigate("/login");
   };
 

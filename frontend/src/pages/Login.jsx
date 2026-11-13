@@ -43,13 +43,21 @@ function Login() {
         return;
       }
 
-      localStorage.setItem("nearlink_token", token);
-      localStorage.setItem("nearlink_user", JSON.stringify(user));
+      // Save login separately for this browser tab
+      sessionStorage.removeItem("nearlink_token");
+      sessionStorage.removeItem("nearlink_user");
+
+      sessionStorage.setItem("nearlink_token", token);
+      sessionStorage.setItem("nearlink_user", JSON.stringify(user));
 
       if (user.role === "admin") {
         navigate("/admin");
       } else if (user.role === "provider") {
-        navigate("/provider-dashboard");
+        if (response.data.providerStatus === "not_submitted") {
+          navigate("/provider-onboarding");
+        } else {
+          navigate("/provider-dashboard");
+        }
       } else {
         navigate("/customer-dashboard");
       }

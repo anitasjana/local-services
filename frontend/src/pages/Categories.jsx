@@ -6,18 +6,23 @@ import api from "../services/api";
 function Categories() {
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Fetch all active service categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await api.get("/services");
-        setCategories(response.data.services || response.data);
+
+        setCategories(
+          response.data.services || response.data
+        );
+
       } catch (err) {
         setError(
-          err.response?.data?.message || "Unable to load categories."
+          err.response?.data?.message ||
+          "Unable to load categories."
         );
       } finally {
         setLoading(false);
@@ -27,34 +32,42 @@ function Categories() {
     fetchCategories();
   }, []);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setSearchTerm(search.trim().toLowerCase());
-  };
+  // Filter categories while typing
+  const filteredCategories = categories.filter((category) => {
+    const searchTerm = search.trim().toLowerCase();
 
-  const filteredCategories = categories.filter((category) =>
-    `${category.name} ${category.description || ""}`
+    const categoryName = category.name || "";
+    const description = category.description || "";
+
+    return `${categoryName} ${description}`
       .toLowerCase()
-      .includes(searchTerm)
-  );
+      .includes(searchTerm);
+  });
 
   return (
     <div className="service-page">
+
       <header className="service-nav">
         <Link to="/" className="service-logo">
-          <span />Nearlink
+          <span />
+          Nearlink
         </Link>
 
         <nav>
           <Link to="/">Home</Link>
           <Link to="/providers">Find services</Link>
           <Link to="/signup">Become a provider</Link>
-          <Link to="/login" className="nav-login">Log in</Link>
-          <Link to="/signup" className="nav-signup">Sign up</Link>
+          <Link to="/login" className="nav-login">
+            Log in
+          </Link>
+          <Link to="/signup" className="nav-signup">
+            Sign up
+          </Link>
         </nav>
       </header>
 
       <main className="service-container">
+
         <p className="service-breadcrumb">
           <Link to="/">Home</Link> › All categories
         </p>
@@ -66,7 +79,10 @@ function Categories() {
         <p>Find the right service for your needs.</p>
 
         {/* Category Search */}
-        <form className="category-search" onSubmit={handleSearch}>
+        <form
+          className="category-search"
+          onSubmit={(e) => e.preventDefault()}
+        >
           <input
             type="text"
             placeholder="Search services (e.g. Cleaning, Plumbing)"
@@ -79,14 +95,19 @@ function Categories() {
           </button>
         </form>
 
-        {loading && <p>Loading categories...</p>}
+        {loading && (
+          <p>Loading categories...</p>
+        )}
 
         {error && (
-          <p className="no-providers">{error}</p>
+          <p className="no-providers">
+            {error}
+          </p>
         )}
 
         {!loading && !error && (
           <div className="category-grid">
+
             {filteredCategories.map((category) => (
               <Link
                 to={`/providers?category=${encodeURIComponent(
@@ -111,11 +132,14 @@ function Categories() {
             {filteredCategories.length === 0 && (
               <p>No matching categories found.</p>
             )}
+
           </div>
         )}
+
       </main>
 
       <ServiceFooter />
+
     </div>
   );
 }
@@ -123,8 +147,13 @@ function Categories() {
 function ServiceFooter() {
   return (
     <footer className="service-footer">
-      <strong>Nearlink · Trusted local services</strong>
-      <span>About · Contact · Privacy Policy · Terms</span>
+      <strong>
+        Nearlink · Trusted local services
+      </strong>
+
+      <span>
+        About · Contact · Privacy Policy · Terms
+      </span>
     </footer>
   );
 }

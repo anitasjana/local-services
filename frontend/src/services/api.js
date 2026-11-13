@@ -4,9 +4,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("nearlink_token");
+  const token = sessionStorage.getItem("nearlink_token");
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
